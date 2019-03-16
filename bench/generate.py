@@ -31,7 +31,7 @@ def make_row(cur):
     }
 
     cur.execute("INSERT INTO section(mask, days, start_time, end_time)"
-                "VALUES (SECT_MASK(?), ?, ?, ?)",
+                "VALUES (MASK(?), ?, ?, ?)",
                 (str(json_input), days, start_time, end_time))
 
 if __name__ == "__main__":

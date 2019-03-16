@@ -43,6 +43,7 @@ static mask_t try_day(const unsigned char *str) {
     return 0b0010000;
     break;
   case 'S':
+    /* Likewise */
     if (str[1] == 'u')
       return 0b1000000;
     else
@@ -59,14 +60,16 @@ static mask_t try_time(const unsigned char *str) {
   if (!(is_digit(str[0]) && is_digit(str[1]) && str[2] == ':' &&
         is_digit(str[3]) && is_digit(str[4])))
     return 0;
+  /* Twice the number of hours */
   int halves = 2 * (10 * (str[0] - '0') + (str[1] - '0'));
   switch (str[3]) {
-    case '2': case '3':
-      halves += 1;
-      break;
-    case '5':
-      halves += 2;
-      break;
+  case '2':
+  case '3':
+    halves += 1;
+    break;
+  case '5':
+    halves += 2;
+    break;
   }
   return 1ULL << halves;
 }
@@ -85,6 +88,7 @@ void section_mask(sqlite3_context *context, int argc, sqlite3_value **argv) {
     else
       end_mask |= try_time(str);
   }
+  /* Must overlap in days and hours separately */
   day_mask = ((start_mask - 1) ^ (end_mask - 1)) | (day_mask << 48);
   sqlite3_result_int64(context, day_mask);
 }
@@ -93,16 +97,17 @@ void section_overlap(sqlite3_context *context, int argc, sqlite3_value **argv) {
   mask_t lhs = sqlite3_value_int64(argv[0]);
   mask_t rhs = sqlite3_value_int64(argv[1]);
   mask_t overlap = lhs & rhs;
+  /* Must overlap in days and hours separately */
   overlap = (overlap & ((1ULL << 48) - 1)) && (overlap & ~((1ULL << 48) - 1));
   sqlite3_result_int(context, overlap);
 }
 
-int sqlite3_mask_init(sqlite3 *db, char **err, const sqlite3_api_routines *api) {
+int sqlite3_mask_init(sqlite3 *db, char **es, const sqlite3_api_routines *api) {
   SQLITE_EXTENSION_INIT2(api);
 
   sqlite3_create_function(db, "BIT_OR", 1, SQLITE_ANY | SQLITE_DETERMINISTIC,
                           NULL, NULL, mask_or_step, mask_passthrough);
-  sqlite3_create_function(db, "SECT_MASK", 1, SQLITE_ANY | SQLITE_DETERMINISTIC,
+  sqlite3_create_function(db, "MASK", 1, SQLITE_ANY | SQLITE_DETERMINISTIC,
                           NULL, section_mask, NULL, NULL);
   sqlite3_create_function(db, "OVERLAP", 2, SQLITE_ANY | SQLITE_DETERMINISTIC,
                           NULL, section_overlap, NULL, NULL);
