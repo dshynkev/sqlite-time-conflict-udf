@@ -9,6 +9,7 @@ The particular case studied here is course sections, which the University of Wat
   "start_time": "16:00",
   "end_time": "17:20",
   "weekdays": "TTh"
+}
 ```
 where start times are aligned to `00` and `30` minutes and end times are aligned to `50` and `20` minutes.
 
@@ -31,9 +32,10 @@ It exports the following SQLite UDFs:
   < 1
   ```
 
-To see the results, run `make benchmark`.
-This will:
-  - generate a sample dataset of 1 million sections
-  - search for courses that do not conflict with 3 randomly chosen ones
-  - display runtime metrics of said search
-The execution time came out to ~60ms on my machine, which appears eminently reasonable.
+To see the results, run `make benchmark`. This will:
+
+* generate a sample dataset of 1 million sections
+* search for courses that do not conflict with 3 randomly chosen ones
+* display runtime metrics of said search
+
+The execution time came out to ~60ms on my machine, which seems very reasonable.
